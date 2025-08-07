@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Add Expense - AK Creative{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-minus-circle"></i> Add Business Expense
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="description" class="form-label">
+                                    <strong>Expense Description *</strong>
+                                </label>
+                                <select class="form-select" id="description" name="description" required>
+                                    <option value="">Select expense type...</option>
+                                    <optgroup label="Business Operations">
+                                        <option value="Transport">Transport</option>
+                                        <option value="Meals">Meals</option>
+                                        <option value="Office Supplies">Office Supplies</option>
+                                    </optgroup>
+                                    <optgroup label="Fixed Costs">
+                                        <option value="Rent">Rent</option>
+                                        <option value="Salaries">Salaries</option>
+                                        <option value="Electricity">Electricity</option>
+                                        <option value="Water">Water</option>
+                                        <option value="Internet">Internet</option>
+                                        <option value="Security">Security</option>
+                                        <option value="Trash">Trash</option>
+                                    </optgroup>
+                                </select>
+                                <div class="form-text">Select from predefined business expense categories</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="transaction_date" class="form-label">
+                                    <strong>Transaction Date *</strong>
+                                </label>
+                                <input type="date" class="form-control" id="transaction_date" 
+                                       name="transaction_date" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="amount_tzs" class="form-label">
+                                    <strong>Amount (TZS) *</strong>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">TZS</span>
+                                    <input type="number" class="form-control" id="amount_tzs" 
+                                           name="amount_tzs" step="0.01" min="0" required
+                                           onchange="convertToUSD()">
+                                </div>
+                                <div class="form-text">Enter amount in Tanzanian Shillings</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="amount_usd_display" class="form-label">
+                                    <strong>Amount (USD)</strong>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="text" class="form-control" id="amount_usd_display" 
+                                           readonly placeholder="Auto-calculated">
+                                </div>
+                                <div class="form-text">Automatically calculated (1 USD = 2,500 TZS)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Information Panel -->
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle"></i> Expense Entry Information</h6>
+                        <ul class="mb-0">
+                            <li><strong>Category:</strong> This will be recorded as "Expenses"</li>
+                            <li><strong>Type:</strong> Manual entry (editable)</li>
+                            <li><strong>Currency:</strong> Primary amount in TZS, USD auto-calculated</li>
+                            <li><strong>Predefined Items:</strong> Choose from business expense categories</li>
+                        </ul>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('income_expenses') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Income & Expenses
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-save"></i> Add Expense
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Panel -->
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-eye"></i> Expense Categories Reference</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-success">Business Operations</h6>
+                        <ul class="list-unstyled">
+                            <li><span class="badge bg-light text-dark me-2">Transport</span> - Travel and delivery costs</li>
+                            <li><span class="badge bg-light text-dark me-2">Meals</span> - Business meals and refreshments</li>
+                            <li><span class="badge bg-light text-dark me-2">Office Supplies</span> - Stationery, equipment</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-warning">Fixed Costs</h6>
+                        <ul class="list-unstyled">
+                            <li><span class="badge bg-light text-dark me-2">Rent</span> - Office/workspace rent</li>
+                            <li><span class="badge bg-light text-dark me-2">Salaries</span> - Employee payments</li>
+                            <li><span class="badge bg-light text-dark me-2">Utilities</span> - Electricity, Water, Internet</li>
+                            <li><span class="badge bg-light text-dark me-2">Services</span> - Security, Trash collection</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function convertToUSD() {
+    const amountTZS = parseFloat(document.getElementById('amount_tzs').value);
+    const rate = 2500; // 1 USD = 2500 TZS
+    
+    if (!isNaN(amountTZS) && amountTZS > 0) {
+        const amountUSD = (amountTZS / rate).toFixed(2);
+        document.getElementById('amount_usd_display').value = amountUSD;
+    } else {
+        document.getElementById('amount_usd_display').value = '';
+    }
+}
+
+// Set today's date as default
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('transaction_date').value = today;
+});
+</script>
+{% endblock %}

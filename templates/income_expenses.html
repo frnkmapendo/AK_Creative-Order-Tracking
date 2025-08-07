@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Income & Expenses - AK Creative{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-chart-line"></i> Income & Expenses</h2>
+    <div>
+        <a href="{{ url_for('add_expense') }}" class="btn btn-danger">
+            <i class="fas fa-minus-circle"></i> Add Expense
+        </a>
+        <button class="btn btn-outline-secondary" onclick="toggleView()">
+            <i class="fas fa-filter"></i> Toggle View
+        </button>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card sales-section">
+            <div class="card-body text-center">
+                <h5 class="card-title"><i class="fas fa-arrow-up text-success"></i> Total Sales</h5>
+                <p class="currency-display mb-1">TZS {{ "{:,.0f}".format(total_sales_tzs) }}</p>
+                <p class="currency-display text-muted">USD {{ "{:,.2f}".format(total_sales_usd) }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card expenses-section">
+            <div class="card-body text-center">
+                <h5 class="card-title"><i class="fas fa-arrow-down text-danger"></i> Total Expenses</h5>
+                <p class="currency-display mb-1">TZS {{ "{:,.0f}".format(total_expenses_tzs) }}</p>
+                <p class="currency-display text-muted">USD {{ "{:,.2f}".format(total_expenses_usd) }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card summary-card">
+            <div class="card-body text-center">
+                <h5 class="card-title"><i class="fas fa-calculator"></i> Net Income</h5>
+                <p class="currency-display mb-1">TZS {{ "{:,.0f}".format(net_income_tzs) }}</p>
+                <p class="currency-display">USD {{ "{:,.2f}".format(net_income_usd) }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-light">
+            <div class="card-body text-center">
+                <h5 class="card-title"><i class="fas fa-exchange-alt"></i> Exchange Rate</h5>
+                <p class="currency-display">1 USD = 2,500 TZS</p>
+                <small class="text-muted">Approximate rate</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transactions Table -->
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">All Transactions</h5>
+            <div>
+                <span class="badge bg-success me-2">
+                    <i class="fas fa-robot"></i> Auto-Generated Sales
+                </span>
+                <span class="badge bg-warning">
+                    <i class="fas fa-edit"></i> Manual Expenses
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if transactions %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Amount (TZS)</th>
+                        <th>Amount (USD)</th>
+                        <th>Type</th>
+                        <th>Customer/Note</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionTable">
+                    {% for transaction in transactions %}
+                    <tr class="transaction-row {{ 'sales-row' if transaction.category == 'Sales' else 'expense-row' }}
+                               {{ 'auto-generated' if transaction.is_auto_generated else 'manual-entry' }}">
+                        <td>{{ transaction.transaction_date }}</td>
+                        <td>
+                            <strong>{{ transaction.description }}</strong>
+                            {% if transaction.is_auto_generated %}
+                            <span class="badge bg-primary ms-2">Auto</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if transaction.category == 'Sales' %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-arrow-up"></i> Sales
+                            </span>
+                            {% else %}
+                            <span class="badge bg-danger">
+                                <i class="fas fa-arrow-down"></i> Expenses
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="currency-display">
+                            {% if transaction.category == 'Sales' %}
+                            +{{ "{:,.0f}".format(transaction.amount_tzs) }}
+                            {% else %}
+                            -{{ "{:,.0f}".format(transaction.amount_tzs) }}
+                            {% endif %}
+                        </td>
+                        <td class="currency-display">
+                            {% if transaction.category == 'Sales' %}
+                            +{{ "{:,.2f}".format(transaction.amount_usd) }}
+                            {% else %}
+                            -{{ "{:,.2f}".format(transaction.amount_usd) }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if transaction.is_auto_generated %}
+                            <span class="text-info">
+                                <i class="fas fa-robot"></i> Auto-Generated
+                            </span>
+                            {% else %}
+                            <span class="text-warning">
+                                <i class="fas fa-edit"></i> Manual Entry
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if transaction.customer_name %}
+                            {{ transaction.customer_name }}
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No transactions yet</h5>
+            <p class="text-muted">Add your first order or expense to get started</p>
+            <a href="{{ url_for('add_order') }}" class="btn btn-primary me-2">Add Order</a>
+            <a href="{{ url_for('add_expense') }}" class="btn btn-danger">Add Expense</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0"><i class="fas fa-info-circle"></i> Sales Information</h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-1"><strong>Auto-Generated:</strong> Sales transactions are automatically created when orders are marked as "Payment Received: Yes"</p>
+                <p class="mb-1"><strong>Read-Only:</strong> Auto-generated sales cannot be edited manually</p>
+                <p class="mb-0"><strong>Linked:</strong> Each sales transaction is linked to its corresponding order</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h6 class="mb-0"><i class="fas fa-info-circle"></i> Expenses Information</h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-1"><strong>Manual Entry:</strong> All expense transactions are entered manually</p>
+                <p class="mb-1"><strong>Categories:</strong> Choose from predefined business expense categories</p>
+                <p class="mb-0"><strong>Editable:</strong> Expense entries can be modified as needed</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let showSalesOnly = false;
+let showExpensesOnly = false;
+
+function toggleView() {
+    const rows = document.querySelectorAll('.transaction-row');
+    
+    if (!showSalesOnly && !showExpensesOnly) {
+        // Show sales only
+        showSalesOnly = true;
+        rows.forEach(row => {
+            if (!row.classList.contains('sales-row')) {
+                row.style.display = 'none';
+            }
+        });
+        document.querySelector('.btn-outline-secondary').innerHTML = '<i class="fas fa-eye"></i> Sales Only';
+    } else if (showSalesOnly) {
+        // Show expenses only
+        showSalesOnly = false;
+        showExpensesOnly = true;
+        rows.forEach(row => {
+            if (row.classList.contains('sales-row')) {
+                row.style.display = 'none';
+            } else {
+                row.style.display = '';
+            }
+        });
+        document.querySelector('.btn-outline-secondary').innerHTML = '<i class="fas fa-eye"></i> Expenses Only';
+    } else {
+        // Show all
+        showExpensesOnly = false;
+        rows.forEach(row => {
+            row.style.display = '';
+        });
+        document.querySelector('.btn-outline-secondary').innerHTML = '<i class="fas fa-filter"></i> Toggle View';
+    }
+}
+</script>
+{% endblock %}
