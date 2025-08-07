@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Orders - AK Creative{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-shopping-cart"></i> Orders</h2>
+    <a href="{{ url_for('add_order') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add New Order
+    </a>
+</div>
+
+{% if orders %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">All Orders</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Item Type</th>
+                        <th>Description</th>
+                        <th>Qty</th>
+                        <th>Unit Price (TZS)</th>
+                        <th>Total (TZS)</th>
+                        <th>Total (USD)</th>
+                        <th>Payment</th>
+                        <th>Order Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td><strong>#{{ order.id }}</strong></td>
+                        <td>{{ order.customer_name }}</td>
+                        <td>
+                            <span class="badge bg-info">{{ order.item_type }}</span>
+                        </td>
+                        <td>{{ order.description or '-' }}</td>
+                        <td>{{ order.quantity }}</td>
+                        <td class="currency-display">{{ "{:,.0f}".format(order.unit_price_tzs) }}</td>
+                        <td class="currency-display">{{ "{:,.0f}".format(order.total_amount_tzs) }}</td>
+                        <td class="currency-display">${{ "{:,.2f}".format(order.total_amount_usd) }}</td>
+                        <td>
+                            {% if order.payment_received == 'Yes' %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-check"></i> Paid
+                            </span>
+                            {% else %}
+                            <span class="badge bg-warning">
+                                <i class="fas fa-clock"></i> Pending
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>{{ order.order_date }}</td>
+                        <td>
+                            {% if order.payment_received == 'No' %}
+                            <a href="{{ url_for('update_payment', order_id=order.id) }}" 
+                               class="btn btn-sm btn-success" 
+                               onclick="return confirm('Mark this order as paid? This will auto-generate a sales transaction.')">
+                                <i class="fas fa-money-bill"></i> Mark Paid
+                            </a>
+                            {% else %}
+                            <span class="text-success">
+                                <i class="fas fa-check-circle"></i> Sales Generated
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Statistics -->
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-primary">Total Orders</h5>
+                <h3>{{ orders|length }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-success">Paid Orders</h5>
+                <h3>{{ orders|selectattr('payment_received', 'equalto', 'Yes')|list|length }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-warning">Pending Orders</h5>
+                <h3>{{ orders|selectattr('payment_received', 'equalto', 'No')|list|length }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-info">Total Value (TZS)</h5>
+                <h3 class="currency-display">{{ "{:,.0f}".format(orders|sum(attribute='total_amount_tzs')) }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<div class="card">
+    <div class="card-body text-center py-5">
+        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">No orders yet</h5>
+        <p class="text-muted">Start by adding your first customer order</p>
+        <a href="{{ url_for('add_order') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add First Order
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

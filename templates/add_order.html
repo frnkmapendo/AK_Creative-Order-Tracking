@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Add Order - AK Creative{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-plus"></i> Add New Order
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="customer_name" class="form-label">
+                                    <strong>Customer Name *</strong>
+                                </label>
+                                <input type="text" class="form-control" id="customer_name" 
+                                       name="customer_name" required>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="item_type" class="form-label">
+                                    <strong>Item Type *</strong>
+                                </label>
+                                <select class="form-select" id="item_type" name="item_type" required>
+                                    <option value="">Select item type...</option>
+                                    <optgroup label="Print Products">
+                                        <option value="Picha">Picha</option>
+                                        <option value="Banner">Banner</option>
+                                        <option value="Holder">Holder</option>
+                                        <option value="Notebook">Notebook</option>
+                                        <option value="Poster">Poster</option>
+                                        <option value="Sticker">Sticker</option>
+                                    </optgroup>
+                                    <optgroup label="Services">
+                                        <option value="Design">Design</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">
+                            <strong>Description</strong>
+                        </label>
+                        <textarea class="form-control" id="description" name="description" 
+                                  rows="3" placeholder="Additional details about the order..."></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="quantity" class="form-label">
+                                    <strong>Quantity *</strong>
+                                </label>
+                                <input type="number" class="form-control" id="quantity" 
+                                       name="quantity" value="1" min="1" required onchange="calculateTotal()">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="unit_price_tzs" class="form-label">
+                                    <strong>Unit Price (TZS) *</strong>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">TZS</span>
+                                    <input type="number" class="form-control" id="unit_price_tzs" 
+                                           name="unit_price_tzs" step="0.01" min="0" required 
+                                           onchange="calculateTotal()">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="payment_received" class="form-label">
+                                    <strong>Payment Status *</strong>
+                                </label>
+                                <select class="form-select" id="payment_received" name="payment_received" required>
+                                    <option value="No">Payment Pending</option>
+                                    <option value="Yes">Payment Received</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="order_date" class="form-label">
+                                    <strong>Order Date *</strong>
+                                </label>
+                                <input type="date" class="form-control" id="order_date" 
+                                       name="order_date" required>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <strong>Total Amount</strong>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">TZS</span>
+                                    <input type="text" class="form-control" id="total_display_tzs" readonly>
+                                </div>
+                                <div class="input-group mt-2">
+                                    <span class="input-group-text">USD</span>
+                                    <input type="text" class="form-control" id="total_display_usd" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Information Panel -->
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle"></i> Order Processing Information</h6>
+                        <ul class="mb-0">
+                            <li><strong>Payment Received "Yes":</strong> Will automatically generate a sales transaction</li>
+                            <li><strong>Payment Pending:</strong> Can be updated later to generate sales transaction</li>
+                            <li><strong>Currency:</strong> USD amount auto-calculated (1 USD = 2,500 TZS)</li>
+                            <li><strong>Item Types:</strong> Select from AK Creative's product catalog</li>
+                        </ul>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('orders') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Orders
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Create Order
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Product Catalog Reference -->
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-palette"></i> AK Creative Product Catalog</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-info">Print Products</h6>
+                        <div class="mb-2">
+                            <span class="badge bg-info me-2">Picha</span> - Photo prints and portraits
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge bg-info me-2">Banner</span> - Advertising banners
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge bg-info me-2">Holder</span> - Document holders
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge bg-info me-2">Notebook</span> - Custom notebooks
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge bg-info me-2">Poster</span> - Promotional posters
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge bg-info me-2">Sticker</span> - Custom stickers
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-success">Services</h6>
+                        <div class="mb-2">
+                            <span class="badge bg-success me-2">Design</span> - Custom design services
+                        </div>
+                        
+                        <h6 class="text-warning mt-3">Typical Pricing (TZS)</h6>
+                        <small class="text-muted">
+                            Adjust prices based on size, quantity, and complexity
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function calculateTotal() {
+    const quantity = parseInt(document.getElementById('quantity').value) || 0;
+    const unitPrice = parseFloat(document.getElementById('unit_price_tzs').value) || 0;
+    const rate = 2500; // 1 USD = 2500 TZS
+    
+    const totalTZS = quantity * unitPrice;
+    const totalUSD = totalTZS / rate;
+    
+    document.getElementById('total_display_tzs').value = totalTZS.toLocaleString('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    });
+    
+    document.getElementById('total_display_usd').value = totalUSD.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+// Set today's date as default
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('order_date').value = today;
+    calculateTotal();
+});
+
+// Auto-calculate when fields change
+document.getElementById('quantity').addEventListener('input', calculateTotal);
+document.getElementById('unit_price_tzs').addEventListener('input', calculateTotal);
+</script>
+{% endblock %}
